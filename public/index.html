@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>استوديو لقطات Edge واستخراج واجهات GitHub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Cairo', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .glass-card { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(10px); border: 1px solid rgba(51, 65, 85, 0.6); }
+  </style>
+</head>
+<body class="h-full flex flex-col font-sans antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- Main Navigation Header -->
+  <header class="glass sticky top-0 z-50 px-6 py-3.5 flex items-center justify-between border-b border-slate-800">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-sky-400 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-base font-bold text-white tracking-wide flex items-center gap-2">
+          <span>استوديو التقاط المعارض والواجهات</span>
+          <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Edge Pro</span>
+        </h1>
+        <p class="text-xs text-slate-400">لقطات فائقة الدقة لمنصات العمل الحر واستخراج واجهات مشاريع الويب</p>
+      </div>
+    </div>
+
+    <!-- Mode Selector Tabs -->
+    <div class="flex items-center gap-2 bg-slate-900/90 p-1 rounded-xl border border-slate-800">
+      <button id="tabBtnPhase1" onclick="switchTab('phase1')" class="px-4 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-2 bg-indigo-600 text-white shadow">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+        <span>1. استوديو لقطات Edge</span>
+      </button>
+      <button id="tabBtnPhase2" onclick="switchTab('phase2')" class="px-4 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-2 text-slate-400 hover:text-slate-200">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+        <span>2. مستخرج واجهات GitHub</span>
+      </button>
+      <button onclick="openGalleryFolder()" class="px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-indigo-300 hover:bg-slate-800 rounded-lg transition-all flex items-center gap-1.5 border border-slate-700/60" title="فتح مجلد الإخراج في مستكشف ويندوز">
+        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"></path></svg>
+        <span>مجلد اللقطات</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Notification Banner -->
+  <div id="toast" class="hidden fixed bottom-6 left-6 z-50 max-w-md bg-slate-900 border border-slate-700 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 transition-all duration-300">
+    <div id="toastIcon"></div>
+    <div id="toastMsg" class="text-xs font-medium"></div>
+  </div>
+
+  <main class="flex-1 overflow-y-auto p-6 max-w-[1700px] w-full mx-auto">
+
+    <!-- ======================================================== -->
+    <!-- PHASE 1: EDGE STUDIO CAPTURE -->
+    <!-- ======================================================== -->
+    <div id="sectionPhase1" class="space-y-6">
+
+      <!-- Top Control Bar -->
+      <div class="glass-card rounded-2xl p-5 shadow-xl">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-end">
+          
+            <!-- URL Input -->
+          <div class="lg:col-span-5 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label class="block text-xs font-bold text-slate-300">رابط الموقع المراد التقاطه (URL)</label>
+              <div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+                <span>مثال:</span>
+                <button type="button" onclick="document.getElementById('targetUrl').value='https://takyifzone.com/'; fetchPreview();" class="text-indigo-400 hover:text-indigo-300 font-mono underline decoration-dotted">takyifzone.com</button>
+              </div>
+            </div>
+            <div class="relative">
+              <input type="text" id="targetUrl" placeholder="https://mywebsite.com أو رابط محلي" value="https://example.com" class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono text-left dir-ltr pl-24" />
+              <button onclick="fetchPreview()" id="btnPreview" class="absolute left-1.5 top-1.5 bottom-1.5 px-3 bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 rounded-lg text-xs font-medium flex items-center gap-1.5 transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                <span>معاينة فورية</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Dimension Preset -->
+          <div class="lg:col-span-3 space-y-1.5">
+            <label class="block text-xs font-bold text-slate-300">أبعاد منصات العمل الحر (Standard Preset)</label>
+            <select id="presetSelect" onchange="onPresetChange()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500">
+              <option value="mostaql_hd" selected>مستقل / خمسات (4:3 - 1600x1200)</option>
+              <option value="mostaql_std">مستقل / خمسات كلاسيك (4:3 - 1200x900)</option>
+              <option value="behance_cover">بيهانس غلاف (4:3 - 1600x1200)</option>
+              <option value="behance_16_9">بيهانس / دريبل (16:9 - 1920x1080)</option>
+              <option value="behance_retina">شاشة عريضة ريتينا (16:10 - 2880x1800)</option>
+              <option value="upwork_catalog">أب ورك كاتالوج (4:3 - 1000x750)</option>
+              <option value="desktop_fhd">سطح المكتب كامل FHD (1920x1080)</option>
+              <option value="macbook">ماك بوك (16:10 - 1440x900)</option>
+              <option value="hero_banner">بانر عريض هيرو (1920x800)</option>
+              <option value="mobile_iphone">آيفون حديث (393x852)</option>
+              <option value="custom">أبعاد مخصصة...</option>
+            </select>
+          </div>
+
+          <!-- Capture Mode -->
+          <div class="lg:col-span-2 space-y-1.5">
+            <label class="block text-xs font-bold text-slate-300">نمط الالتقاط (Capture Mode)</label>
+            <select id="captureMode" onchange="onCaptureModeChange()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500">
+              <option value="viewport">إطار العرض القياسي (Viewport)</option>
+              <option value="hero" selected>قسم الهيرو التلقائي (Hero Section)</option>
+              <option value="fullPage">كامل الصفحة طولياً (Full Page)</option>
+              <option value="custom_clip">كادر مخصص يدوي (Custom Frame)</option>
+              <option value="selector">محدد CSS لعنصر محدد (Selector)</option>
+            </select>
+          </div>
+
+          <!-- Retina Quality Scale -->
+          <div class="lg:col-span-2 space-y-1.5">
+            <label class="block text-xs font-bold text-slate-300">مقياس الدقة (Retina Scale)</label>
+            <div class="flex rounded-xl bg-slate-900 p-1 border border-slate-700">
+              <button type="button" onclick="setScale(1)" id="btnScale1" class="flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-400">1x</button>
+              <button type="button" onclick="setScale(2)" id="btnScale2" class="flex-1 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 text-white shadow">2x ريتينا</button>
+              <button type="button" onclick="setScale(3)" id="btnScale3" class="flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-400">3x فائق</button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Custom Dimensions Bar (Hidden by default) -->
+        <div id="customDimsRow" class="hidden mt-4 pt-4 border-t border-slate-800 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div>
+            <label class="text-[11px] text-slate-400">العرض (Width px)</label>
+            <input type="number" id="customWidth" value="1920" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white font-mono" />
+          </div>
+          <div>
+            <label class="text-[11px] text-slate-400">الارتفاع (Height px)</label>
+            <input type="number" id="customHeight" value="1080" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white font-mono" />
+          </div>
+          <div id="selectorContainer" class="col-span-2 hidden">
+            <label class="text-[11px] text-slate-400">محدد العنصر (CSS Selector)</label>
+            <input type="text" id="customSelector" placeholder="مثال: .pricing-table أو #hero-content" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white font-mono dir-ltr" />
+          </div>
+        </div>
+
+        <!-- Wait Delay & Preloader Bar (Always Visible & Prominent) -->
+        <div class="mt-4 pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-3 text-xs bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>مهلة انتظار إضافية لاكتمال تحميل الموقع والمؤثرات:</span>
+            </span>
+            <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
+              <button type="button" onclick="setWaitDelay(0)" class="btn-wait px-2.5 py-1 rounded-md text-[11px] text-slate-400 hover:text-white transition" data-val="0">0s (فوري)</button>
+              <button type="button" onclick="setWaitDelay(2)" class="btn-wait px-2.5 py-1 rounded-md text-[11px] text-slate-400 hover:text-white transition" data-val="2">2s</button>
+              <button type="button" onclick="setWaitDelay(3)" class="btn-wait px-2.5 py-1 rounded-md text-[11px] bg-indigo-600 text-white font-bold shadow transition" data-val="3">3s (تلقائي)</button>
+              <button type="button" onclick="setWaitDelay(5)" class="btn-wait px-2.5 py-1 rounded-md text-[11px] text-slate-400 hover:text-white transition" data-val="5">5s (موصى به)</button>
+              <button type="button" onclick="setWaitDelay(8)" class="btn-wait px-2.5 py-1 rounded-md text-[11px] text-slate-400 hover:text-white transition" data-val="8">8s</button>
+              <button type="button" onclick="setWaitDelay(12)" class="btn-wait px-2.5 py-1 rounded-md text-[11px] text-slate-400 hover:text-white transition" data-val="12">12s (مكثف)</button>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-1.5 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800">
+              <label for="waitDelayNumber" class="text-[11px] text-slate-400">تخصيص:</label>
+              <input type="number" id="waitDelayNumber" min="0" max="30" value="3" oninput="onWaitDelayInput(this.value)" class="w-12 bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-xs text-white font-mono text-center focus:border-indigo-500" />
+              <span class="text-[11px] text-slate-400">ثانية</span>
+            </div>
+            <label class="flex items-center gap-1.5 text-[11px] text-amber-300 cursor-pointer select-none">
+              <input type="checkbox" id="chkDismissLoaders" checked class="rounded bg-slate-950 border-slate-700 text-indigo-600 focus:ring-0" />
+              <span>إخفاء شاشات اللودر المعلقة تلقائياً</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Workspace: Viewport Live Preview + Controls Panel -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left/Main: Live Preview Stage -->
+        <div class="lg:col-span-8 space-y-4">
+          <div class="glass-card rounded-2xl p-4 shadow-xl flex flex-col">
+            <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800 text-xs text-slate-400">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="font-bold text-slate-300">منصة المعاينة التفاعلية وكادر اللقطة</span>
+                <span id="pageTitleLabel" class="text-slate-500 truncate max-w-md"></span>
+              </div>
+              <div class="flex items-center gap-3 font-mono text-[11px]">
+                <span id="dimDisplay" class="bg-slate-900 px-2.5 py-1 rounded border border-slate-800">1600 &times; 1200 px</span>
+              </div>
+            </div>
+
+            <!-- Viewport Container -->
+            <div id="previewContainer" class="relative bg-slate-950 rounded-xl overflow-hidden border border-slate-800 min-h-[460px] flex items-center justify-center">
+              <div id="previewEmpty" class="text-center p-8 text-slate-500">
+                <svg class="w-12 h-12 mx-auto mb-3 opacity-30 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <div class="text-sm font-semibold text-slate-400">اضغط "معاينة فورية" لتحميل وتفحص الصفحة بدقة عبر Edge</div>
+                <div class="text-xs text-slate-600 mt-1">يتم الكشف التلقائي عن أقسام الهيرو وحساب كادر اللقطة بدون تشويه</div>
+              </div>
+
+              <!-- Live Preview Image -->
+              <img id="previewImg" class="hidden w-full h-auto object-contain select-none" />
+
+              <!-- Interactive Framing Overlay Box -->
+              <div id="framingBox" class="hidden absolute border-2 border-indigo-400 bg-indigo-500/10 pointer-events-none transition-all duration-200 shadow-[0_0_0_9999px_rgba(0,0,0,0.55)]">
+                <div class="absolute -top-6 right-0 bg-indigo-600 text-white text-[10px] font-mono px-2 py-0.5 rounded shadow">
+                  كادر الالتقاط: <span id="frameDimText">1600x1200</span>
+                </div>
+              </div>
+
+              <!-- Loading Spinner -->
+              <div id="previewLoading" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center z-20 p-6 text-center">
+                <div class="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4 shadow-lg shadow-indigo-500/20"></div>
+                <div id="previewLoadingTitle" class="text-sm font-bold text-white mb-1">جارٍ محاكاة وتحميل الصفحة بدقة في Edge...</div>
+                <div id="previewLoadingSub" class="text-xs text-indigo-300 max-w-sm">يتم تخطي صفحات التحقق الأمنية، انتظار اكتمال المحتوى واللودر، وضبط كادر الهيرو</div>
+              </div>
+            </div>
+
+            <!-- Scroll Offset Controller -->
+            <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center gap-4">
+              <label class="text-xs font-bold text-slate-300 whitespace-nowrap">موضع التمرير (Scroll Y):</label>
+              <input type="range" id="scrollSlider" min="0" max="3000" value="0" step="50" oninput="onScrollChange(this.value)" class="flex-1 accent-indigo-500 cursor-pointer" />
+              <span id="scrollVal" class="text-xs font-mono text-slate-400 w-16 text-left">0 px</span>
+              <button onclick="scrollToTop()" class="px-2.5 py-1 text-[11px] bg-slate-900 hover:bg-slate-800 rounded border border-slate-700 text-slate-300">أعلى</button>
+              <button onclick="scrollToHero()" class="px-2.5 py-1 text-[11px] bg-slate-900 hover:bg-slate-800 rounded border border-slate-700 text-indigo-300">قسم الهيرو</button>
+            </div>
+          </div>
+        </div>
+
+
+
+        <!-- Right: Framing & Hero Section Fine-Tuning Controls -->
+        <div class="lg:col-span-4 space-y-4">
+          
+          <!-- Hero Section Controller Card -->
+          <div class="glass-card rounded-2xl p-5 shadow-xl space-y-4">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+              <h3 class="text-xs font-bold text-white flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                <span>ضبط كادر الـ Hero Section والنزيف (Bleed)</span>
+              </h3>
+              <span id="heroStatusBadge" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400">في انتظار الفحص</span>
+            </div>
+
+            <p class="text-xs text-slate-400 leading-relaxed">
+              تحديد تلقائي للأقسام الرئيسية القريبة من حواف الشاشة مع إمكانية إضافة هوامش نزيف لمنع قص الظلال والعناصر البارزة.
+            </p>
+
+            <div class="bg-slate-900/80 rounded-xl p-3 border border-slate-800 text-xs space-y-1.5 font-mono">
+              <div class="flex justify-between text-slate-400">
+                <span>المحدد المكتشف:</span>
+                <span id="heroSelectorLabel" class="text-indigo-300 truncate max-w-[150px]">-</span>
+              </div>
+              <div class="flex justify-between text-slate-400">
+                <span>أبعاد القسم:</span>
+                <span id="heroBoxLabel" class="text-emerald-400">-</span>
+              </div>
+            </div>
+
+            <!-- Bleed / Padding Adjusters -->
+            <div class="space-y-2">
+              <label class="text-[11px] font-bold text-slate-300 block">هوامش النزيف الإضافية (Padding / Bleed px):</label>
+              <div class="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span class="text-[10px] text-slate-500">أعلى (Top)</span>
+                  <input type="number" id="padTop" value="0" class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-white font-mono" />
+                </div>
+                <div>
+                  <span class="text-[10px] text-slate-500">أسفل (Bottom)</span>
+                  <input type="number" id="padBottom" value="20" class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-white font-mono" />
+                </div>
+                <div>
+                  <span class="text-[10px] text-slate-500">يمين (Right)</span>
+                  <input type="number" id="padRight" value="0" class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-white font-mono" />
+                </div>
+                <div>
+                  <span class="text-[10px] text-slate-500">يسار (Left)</span>
+                  <input type="number" id="padLeft" value="0" class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-white font-mono" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Smart Loading & Stealth Info Badge in Right Panel -->
+            <div class="pt-3 border-t border-slate-800 space-y-2">
+              <div class="flex items-center justify-between">
+                <label class="text-[11px] font-bold text-white flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  <span>التحميل الذكي وتخطي الحمايات:</span>
+                </label>
+                <span class="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 font-mono">Stealth Active</span>
+              </div>
+              <p class="text-[11px] text-slate-400 leading-relaxed">
+                يتم تطبيق مهلة الانتظار المحددة في الشريط العلوي تلقائياً (<span id="activeDelayBadge" class="text-indigo-400 font-mono font-bold">3 ثوانٍ</span>) مع إزالة شاشات اللودر وتخطي صفحات التحقق الأمنية.
+              </p>
+            </div>
+
+            <!-- Anti-Distortion Toggles -->
+            <div class="pt-2 border-t border-slate-800 space-y-2">
+              <label class="text-[11px] font-bold text-slate-300 block">خيارات جودة العرض ومنع التشويه:</label>
+              
+              <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                <input type="checkbox" id="chkFreeze" checked class="rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-0" />
+                <span>تجميد الحركات لمنع التمويه (Pause Animations)</span>
+              </label>
+
+              <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                <input type="checkbox" id="chkHideBanners" checked class="rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-0" />
+                <span>إخفاء لافتات الكوكيز والرسائل العائمة المزعجة</span>
+              </label>
+
+              <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                <input type="checkbox" id="chkHideFixed" class="rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-0" />
+                <span>تثبيت الرأس الملتصق (Prevent Sticky Header Bleed)</span>
+              </label>
+            </div>
+
+            <!-- Output Format & Quality -->
+            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800">
+              <div>
+                <label class="text-[10px] text-slate-400">صيغة الحفظ</label>
+                <select id="outFormat" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-white">
+                  <option value="png" selected>PNG (بدون فقدان - مثالي)</option>
+                  <option value="webp">WebP (عالي الضغط)</option>
+                  <option value="jpeg">JPEG (معرض أعمال)</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-[10px] text-slate-400">اسم الملف (اختياري)</label>
+                <input type="text" id="outFileName" placeholder="تلقائي حسب الموقع" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white" />
+              </div>
+            </div>
+
+            <!-- Big Capture Action Button -->
+            <button onclick="executeCapture()" id="btnCapture" class="w-full py-3.5 bg-gradient-to-r from-indigo-600 via-indigo-500 to-sky-500 hover:from-indigo-500 hover:to-sky-400 text-white font-bold rounded-xl text-sm shadow-xl shadow-indigo-600/30 flex items-center justify-center gap-2 transition active:scale-[0.98]">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg>
+              <span>التقاط وحفظ بجودة النشر (Capture)</span>
+            </button>
+
+          </div>
+        </div>
+
+
+
+      </div>
+
+      <!-- Bottom: Captures Gallery -->
+      <div class="glass-card rounded-2xl p-5 shadow-xl space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+              <span>معرض اللقطات المحفوظة (منظمة تلقائياً حسب الموقع)</span>
+            </h3>
+            <span id="galleryCountBadge" class="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">0 لقطة</span>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="loadCaptures()" class="text-xs text-slate-400 hover:text-white px-3 py-1 bg-slate-900 border border-slate-800 rounded-lg">تحديث</button>
+            <button onclick="openGalleryFolder()" class="text-xs text-indigo-300 hover:text-indigo-200 px-3 py-1 bg-indigo-950/60 border border-indigo-800/60 rounded-lg">فتح المجلد</button>
+          </div>
+        </div>
+
+
+
+        <div id="galleryGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- PHASE 2: GITHUB FRONTEND EXTRACTOR -->
+    <!-- ======================================================== -->
+    <div id="sectionPhase2" class="hidden space-y-6">
+
+      <!-- GitHub Intake Box -->
+      <div class="glass-card rounded-2xl p-6 shadow-xl space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div>
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-indigo-500"></span>
+              <span>استيراد وتحليل واجهات مشاريع GitHub (Laravel / Vue / Inertia / Blade)</span>
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">فحص المستودع تلقائياً واستخراج الصفحات والمكونات وعرضها في بيئة معزولة دون الحاجة لقاعدة بيانات أو تشغيل الخادم الخلفي</p>
+          </div>
+          <span class="text-xs bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-3 py-1 rounded-full font-mono font-semibold">Phase 2 Engine</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-end">
+          <div class="lg:col-span-8 space-y-1.5">
+            <label class="block text-xs font-bold text-slate-300">رابط مستودع GitHub أو مسار مجلد محلي على الجهاز</label>
+            <input type="text" id="githubRepoInput" placeholder="https://github.com/user/laravel-vue-project أو D:/Projects/MyLaravelApp" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono text-left dir-ltr" />
+          </div>
+
+          <div class="lg:col-span-4 flex gap-2">
+            <button onclick="analyzeGitHubRepo()" id="btnAnalyzeRepo" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+              <span>1. فحص التقنيات والمسارات</span>
+            </button>
+            <button onclick="renderAllGitHubPages()" id="btnRenderAll" disabled class="flex-1 py-2.5 bg-slate-800 disabled:opacity-40 hover:bg-emerald-600 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+              <span>2. استخراج وتصوير الكل</span>
+            </button>
+          </div>
+        </div>
+
+
+      </div>
+
+      <!-- Analysis Results & Tech Stack Card -->
+      <div id="ghAnalysisCard" class="hidden glass-card rounded-2xl p-6 shadow-xl space-y-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4 border-b border-slate-800">
+          <div>
+            <div class="text-xs text-indigo-400 font-semibold mb-1">المستودع المستهدف</div>
+            <h3 id="ghRepoTitle" class="text-2xl font-bold text-white tracking-wide"></h3>
+          </div>
+          <div id="ghStackBadges" class="flex flex-wrap gap-2">
+            <!-- Badges populated here -->
+          </div>
+        </div>
+
+
+
+        <!-- Discovered Routes & Views Table -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="text-sm font-bold text-white flex items-center gap-2">
+              <span>قائمة الواجهات والمسارات المكتشفة</span>
+              <span id="ghPagesCount" class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full font-mono">0</span>
+            </h4>
+            <div class="text-xs text-slate-400">جميع الواجهات جاهزة للعرض التلقائي عبر محرك المحاكاة المعزول</div>
+          </div>
+
+          <div class="overflow-x-auto rounded-xl border border-slate-800">
+            <table class="w-full text-right text-xs">
+              <thead class="bg-slate-900/80 text-slate-400 font-semibold border-b border-slate-800">
+                <tr>
+                  <th class="p-3">اسم المكون / الواجهة</th>
+                  <th class="p-3">النوع</th>
+                  <th class="p-3">المسار النسبي (Route)</th>
+                  <th class="p-3">محرك العرض والمحاكاة</th>
+                  <th class="p-3 text-center">الإجراء</th>
+                </tr>
+              </thead>
+              <tbody id="ghPagesTbody" class="divide-y divide-slate-800/60 font-mono">
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+
+      </div>
+
+      <!-- Execution Progress & Live Report -->
+      <div id="ghBatchProgressCard" class="hidden glass-card rounded-2xl p-6 shadow-xl space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></div>
+            <h3 class="text-sm font-bold text-white">تقدم استخراج وتصوير الواجهات</h3>
+          </div>
+          <div id="ghBatchProgressText" class="text-xs font-mono text-indigo-400">0 / 0</div>
+        </div>
+
+        <div class="w-full bg-slate-900 rounded-full h-2.5 overflow-hidden border border-slate-800">
+          <div id="ghProgressBar" class="bg-gradient-to-r from-indigo-500 to-sky-400 h-2.5 transition-all duration-300" style="width: 0%"></div>
+        </div>
+
+        <div id="ghBatchStatusBox" class="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-xs text-slate-300 max-h-48 overflow-y-auto space-y-1">
+          <!-- Log output -->
+        </div>
+      </div>
+
+      <!-- Visual Final Report View -->
+      <div id="ghFinalReportView" class="hidden glass-card rounded-2xl p-6 shadow-xl space-y-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h3 class="text-xl font-bold text-white">تقرير اكتمال استخراج واجهات المشروع</h3>
+            <p class="text-xs text-slate-400 mt-1">تم التقاط جميع الواجهات وتخزينها في مجلد مخصص وتوليد تقرير كامل بالأسباب والمحاكاة</p>
+          </div>
+          <div class="flex gap-3">
+            <a id="btnViewHtmlReport" href="#" target="_blank" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-xs flex items-center gap-2 shadow">
+              <span>عرض التقرير التفاعلي (HTML)</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+            </a>
+            <button onclick="openGitHubOutputFolder()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl text-xs border border-slate-700 flex items-center gap-2">
+              <span>فتح مجلد المشروع</span>
+            </button>
+          </div>
+        </div>
+
+
+
+        <div id="ghReportGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Screenshots cards with mock notes -->
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    // State
+    let currentScale = 2;
+    let livePreviewData = null;
+    let currentAnalyzedRepo = null;
+
+    function switchTab(tab) {
+      const s1 = document.getElementById('sectionPhase1');
+      const s2 = document.getElementById('sectionPhase2');
+      const b1 = document.getElementById('tabBtnPhase1');
+      const b2 = document.getElementById('tabBtnPhase2');
+
+      if (tab === 'phase1') {
+        s1.classList.remove('hidden');
+        s2.classList.add('hidden');
+        b1.className = 'px-4 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-2 bg-indigo-600 text-white shadow';
+        b2.className = 'px-4 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-2 text-slate-400 hover:text-slate-200';
+      } else {
+        s1.classList.add('hidden');
+        s2.classList.remove('hidden');
+        b2.className = 'px-4 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-2 bg-indigo-600 text-white shadow';
+        b1.className = 'px-4 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-2 text-slate-400 hover:text-slate-200';
+      }
+    }
+
+    function showToast(msg, isSuccess = true) {
+      const t = document.getElementById('toast');
+      const msgEl = document.getElementById('toastMsg');
+      const iconEl = document.getElementById('toastIcon');
+
+      msgEl.innerText = msg;
+      iconEl.innerHTML = isSuccess
+        ? `<svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`
+        : `<svg class="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+
+      t.classList.remove('hidden');
+      setTimeout(() => t.classList.add('hidden'), 4500);
+    }
+
+    function setScale(scale) {
+      currentScale = scale;
+      [1, 2, 3].forEach(s => {
+        const btn = document.getElementById(`btnScale${s}`);
+        if (s === scale) {
+          btn.className = 'flex-1 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 text-white shadow';
+        } else {
+          btn.className = 'flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200';
+        }
+      });
+    }
+
+    function onPresetChange() {
+      const val = document.getElementById('presetSelect').value;
+      const customRow = document.getElementById('customDimsRow');
+      if (val === 'custom') {
+        customRow.classList.remove('hidden');
+      } else {
+        customRow.classList.add('hidden');
+      }
+      updateFramingBox();
+    }
+
+    function onCaptureModeChange() {
+      const mode = document.getElementById('captureMode').value;
+      const selectorCont = document.getElementById('selectorContainer');
+      const customRow = document.getElementById('customDimsRow');
+
+      if (mode === 'selector') {
+        customRow.classList.remove('hidden');
+        selectorCont.classList.remove('hidden');
+      } else {
+        selectorCont.classList.add('hidden');
+      }
+      updateFramingBox();
+    }
+
+    function onScrollChange(val) {
+      document.getElementById('scrollVal').innerText = val + ' px';
+    }
+
+    function scrollToTop() {
+      document.getElementById('scrollSlider').value = 0;
+      onScrollChange(0);
+      fetchPreview();
+    }
+
+    function scrollToHero() {
+      if (livePreviewData?.heroInfo?.box) {
+        const heroY = livePreviewData.heroInfo.box.y;
+        document.getElementById('scrollSlider').value = heroY;
+        onScrollChange(heroY);
+        fetchPreview();
+      }
+    }
+
+    // -----------------------------------------------------------------
+    // Wait Delay & Preloader Controls
+    // -----------------------------------------------------------------
+    let currentWaitDelay = 3;
+
+    function setWaitDelay(sec) {
+      const num = Math.max(0, Math.min(30, Number(sec) || 0));
+      currentWaitDelay = num;
+      const numInput = document.getElementById('waitDelayNumber');
+      if (numInput) numInput.value = num;
+      const badge = document.getElementById('activeDelayBadge');
+      if (badge) badge.innerText = `${num} ثوانٍ`;
+
+      // Update button active states
+      document.querySelectorAll('.btn-wait').forEach(btn => {
+        if (Number(btn.dataset.val) === num) {
+          btn.className = 'btn-wait px-2.5 py-1 rounded-md text-[11px] bg-indigo-600 text-white font-bold shadow transition';
+        } else {
+          btn.className = 'btn-wait px-2.5 py-1 rounded-md text-[11px] text-slate-400 hover:text-white transition';
+        }
+      });
+    }
+
+    function onWaitDelayInput(val) {
+      const num = Math.max(0, Math.min(30, Number(val) || 0));
+      currentWaitDelay = num;
+      const badge = document.getElementById('activeDelayBadge');
+      if (badge) badge.innerText = `${num} ثوانٍ`;
+
+      document.querySelectorAll('.btn-wait').forEach(btn => {
+        if (Number(btn.dataset.val) === num) {
+          btn.className = 'btn-wait px-2.5 py-1 rounded-md text-[11px] bg-indigo-600 text-white font-bold shadow transition';
+        } else {
+          btn.className = 'btn-wait px-2.5 py-1 rounded-md text-[11px] text-slate-400 hover:text-white transition';
+        }
+      });
+    }
+
+    function getWaitDelay() {
+      const numInput = document.getElementById('waitDelayNumber');
+      if (numInput && !isNaN(Number(numInput.value))) {
+        return Math.max(0, Math.min(30, Number(numInput.value)));
+      }
+      return currentWaitDelay;
+    }
+
+    // -----------------------------------------------------------------
+    // Phase 1 API Calls
+    // -----------------------------------------------------------------
+    async function fetchPreview() {
+      const url = document.getElementById('targetUrl').value.trim();
+      if (!url) {
+        showToast('يرجى إدخال الرابط أولاً', false);
+        return;
+      }
+
+      const loader = document.getElementById('previewLoading');
+      const emptyState = document.getElementById('previewEmpty');
+      const previewImg = document.getElementById('previewImg');
+      const scrollY = document.getElementById('scrollSlider').value;
+      const titleEl = document.getElementById('previewLoadingTitle');
+      const subEl = document.getElementById('previewLoadingSub');
+
+      const waitDelay = getWaitDelay();
+      const dismissLoaders = document.getElementById('chkDismissLoaders')?.checked !== false;
+
+      let countdownSec = waitDelay;
+      if (titleEl) titleEl.innerText = 'جارٍ الاتصال بالموقع وفحص الأمان عبر Edge...';
+      if (subEl) subEl.innerText = waitDelay > 0
+        ? `مهلة انتظار إضافية لاكتمال المؤثرات: ${waitDelay} ثوانٍ...`
+        : `تحميل مباشر بدون انتظار إضافي...`;
+
+      const countdownInterval = setInterval(() => {
+        if (countdownSec > 0) {
+          countdownSec--;
+          if (titleEl) titleEl.innerText = 'جارٍ محاكاة وتحميل الصفحة بدقة في Edge...';
+          if (subEl) subEl.innerText = `جارٍ تطبيق مهلة الانتظار واكتمال المؤثرات (المتبقي: ${countdownSec} ثوانٍ)...`;
+        }
+      }, 1000);
+
+      loader.classList.remove('hidden');
+
+      try {
+        const res = await fetch('/api/preview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            url,
+            scrollY: Number(scrollY) || 0,
+            waitDelay,
+            dismissLoaders
+          })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          livePreviewData = data;
+          emptyState.classList.add('hidden');
+          previewImg.src = data.previewBase64;
+          previewImg.classList.remove('hidden');
+
+          document.getElementById('pageTitleLabel').innerText = `[${data.title}]`;
+          document.getElementById('scrollSlider').max = Math.max(3000, data.dimensions.totalHeight - 1000);
+
+          // Update Hero Info
+          const hero = data.heroInfo;
+          const statusBadge = document.getElementById('heroStatusBadge');
+          const selectorLabel = document.getElementById('heroSelectorLabel');
+          const boxLabel = document.getElementById('heroBoxLabel');
+
+          if (hero.found) {
+            statusBadge.innerText = 'تم اكتشاف الهيرو بنجاح';
+            statusBadge.className = 'text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+            selectorLabel.innerText = hero.selector;
+            boxLabel.innerText = `${hero.box.width} x ${hero.box.height} px`;
+          } else {
+            statusBadge.innerText = 'استخدام الإطار العلوي الافتراضي';
+            statusBadge.className = 'text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30';
+            selectorLabel.innerText = 'body';
+            boxLabel.innerText = `${hero.box.width} x ${hero.box.height} px`;
+          }
+
+          updateFramingBox();
+          const appliedWait = data.appliedWaitDelay !== undefined ? data.appliedWaitDelay : waitDelay;
+          const removedMsg = data.removedLoadersCount > 0 ? ` (تم تنظيف ${data.removedLoadersCount} لودر معلق)` : '';
+          showToast(`تم عرض المعاينة بنجاح (مهلة الانتظار: ${appliedWait}s)${removedMsg}`);
+        } else {
+          showToast(data.error || 'فشل تحميل الصفحة', false);
+        }
+      } catch (e) {
+        showToast('خطأ في الاتصال بالخادم: ' + e.message, false);
+      } finally {
+        clearInterval(countdownInterval);
+        loader.classList.add('hidden');
+      }
+    }
+
+    function updateFramingBox() {
+      const boxEl = document.getElementById('framingBox');
+      const mode = document.getElementById('captureMode').value;
+      const dimDisplay = document.getElementById('dimDisplay');
+      const frameDimText = document.getElementById('frameDimText');
+
+      if (!livePreviewData || !livePreviewData.previewBase64) {
+        boxEl.classList.add('hidden');
+        return;
+      }
+
+      boxEl.classList.remove('hidden');
+
+      if (mode === 'hero' && livePreviewData.heroInfo?.box) {
+        const hb = livePreviewData.heroInfo.box;
+        boxEl.style.top = '0%';
+        boxEl.style.left = '0%';
+        boxEl.style.width = '100%';
+        boxEl.style.height = '65%';
+        frameDimText.innerText = `Hero (${hb.width}x${hb.height})`;
+        dimDisplay.innerText = `Hero Section: ${hb.width} x ${hb.height} px`;
+      } else if (mode === 'viewport') {
+        boxEl.style.top = '0%';
+        boxEl.style.left = '0%';
+        boxEl.style.width = '100%';
+        boxEl.style.height = '100%';
+        frameDimText.innerText = 'Viewport 100%';
+        dimDisplay.innerText = document.getElementById('presetSelect').selectedOptions[0].text;
+      } else if (mode === 'fullPage') {
+        boxEl.style.top = '0%';
+        boxEl.style.left = '0%';
+        boxEl.style.width = '100%';
+        boxEl.style.height = '100%';
+        frameDimText.innerText = 'Full Page (كامل الارتفاع)';
+        dimDisplay.innerText = 'Full Page Height';
+      }
+    }
+
+    async function executeCapture() {
+      const url = document.getElementById('targetUrl').value.trim();
+      if (!url) {
+        showToast('يرجى تحديد رابط الصفحة أولاً', false);
+        return;
+      }
+
+      const waitDelay = getWaitDelay();
+      const btn = document.getElementById('btnCapture');
+      const origText = btn.innerHTML;
+      btn.innerHTML = `<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div><span>جارٍ التحميل (${waitDelay}s) والالتقاط بدقة...</span>`;
+      btn.disabled = true;
+
+      const payload = {
+        url,
+        preset: document.getElementById('presetSelect').value,
+        customWidth: document.getElementById('customWidth').value,
+        customHeight: document.getElementById('customHeight').value,
+        deviceScaleFactor: currentScale,
+        captureMode: document.getElementById('captureMode').value,
+        selector: document.getElementById('customSelector').value,
+        heroBleedPadding: {
+          top: Number(document.getElementById('padTop').value) || 0,
+          bottom: Number(document.getElementById('padBottom').value) || 0,
+          right: Number(document.getElementById('padRight').value) || 0,
+          left: Number(document.getElementById('padLeft').value) || 0
+        },
+        scrollY: Number(document.getElementById('scrollSlider').value) || 0,
+        format: document.getElementById('outFormat').value,
+        fileName: document.getElementById('outFileName').value,
+        hideFixed: document.getElementById('chkHideFixed').checked,
+        hideBanners: document.getElementById('chkHideBanners').checked,
+        waitDelay,
+        dismissLoaders: document.getElementById('chkDismissLoaders')?.checked !== false
+      };
+
+      try {
+        const res = await fetch('/api/capture', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          const appliedWait = data.appliedWaitDelay !== undefined ? data.appliedWaitDelay : waitDelay;
+          const removedInfo = data.metadata?.removedLoadersCount > 0 ? ` (تم تنظيف ${data.metadata.removedLoadersCount} لودر)` : '';
+          showToast(`تم حفظ اللقطة بنجاح (${data.metadata.fileSizeKB} KB - مهلة انتظار: ${appliedWait}s)${removedInfo}`);
+          loadCaptures();
+        } else {
+          showToast(data.error || 'تعذر حفظ اللقطة', false);
+        }
+      } catch (err) {
+        showToast('خطأ أثناء الالتقاط: ' + err.message, false);
+      } finally {
+        btn.innerHTML = origText;
+        btn.disabled = false;
+      }
+    }
+
+    async function loadCaptures() {
+      try {
+        const res = await fetch('/api/captures');
+        const data = await res.json();
+        const grid = document.getElementById('galleryGrid');
+        const badge = document.getElementById('galleryCountBadge');
+
+        if (!data.success || data.captures.length === 0) {
+          grid.innerHTML = `<div class="col-span-full text-center py-8 text-xs text-slate-500">لا توجد لقطات محفوظة حالياً</div>`;
+          badge.innerText = '0 لقطة';
+          return;
+        }
+
+        badge.innerText = `${data.captures.length} لقطة`;
+        grid.innerHTML = data.captures.map(c => `
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-lg group hover:border-indigo-500/50 transition">
+            <div class="relative aspect-[4/3] bg-slate-950 overflow-hidden cursor-pointer" onclick="window.open('${c.relativeUrl}')">
+              <img src="${c.relativeUrl}" class="w-full h-full object-cover object-top group-hover:scale-105 transition duration-300" />
+              <div class="absolute top-2 right-2 bg-slate-900/80 backdrop-blur px-2 py-0.5 rounded text-[10px] font-mono text-indigo-300 border border-slate-700">
+                ${c.metadata?.dimensions?.renderedWidth || ''}x${c.metadata?.dimensions?.renderedHeight || ''} (${c.sizeKB} KB)
+              </div>
+            </div>
+            <div class="p-3">
+              <div class="font-bold text-xs text-white truncate mb-1" title="${c.fileName}">${c.fileName}</div>
+              <div class="text-[10px] text-slate-500 flex justify-between items-center mb-2">
+                <span>المجلد: ${c.folder}</span>
+                <span>${new Date(c.createdAt).toLocaleDateString('ar-SA')}</span>
+              </div>
+              <div class="flex items-center gap-2 pt-2 border-t border-slate-800">
+                <a href="${c.relativeUrl}" download class="flex-1 py-1 text-center bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 rounded text-[11px] font-medium border border-indigo-500/30">تحميل</a>
+                <button onclick="deleteCapture('${c.fullPath.replace(/\\/g, '\\\\')}')" class="px-2 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded text-[11px] border border-rose-500/20">حذف</button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {}
+    }
+
+    async function deleteCapture(fullPath) {
+      if (!confirm('هل تريد بالتأكيد حذف هذه اللقطة؟')) return;
+      try {
+        const res = await fetch('/api/captures/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fullPath })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('تم حذف اللقطة');
+          loadCaptures();
+        }
+      } catch (e) {}
+    }
+
+    async function openGalleryFolder(folder = '') {
+      try {
+        await fetch('/api/captures/open-folder', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ folder })
+        });
+        showToast('تم فتح المجلد في مستكشف ويندوز');
+      } catch (e) {}
+    }
+
+    // -----------------------------------------------------------------
+    // Phase 2 API Calls
+    // -----------------------------------------------------------------
+    async function analyzeGitHubRepo() {
+      const repoUrlOrPath = document.getElementById('githubRepoInput').value.trim();
+      if (!repoUrlOrPath) {
+        showToast('يرجى إدخال رابط أو مسار المستودع أولاً', false);
+        return;
+      }
+
+      const btn = document.getElementById('btnAnalyzeRepo');
+      const origText = btn.innerHTML;
+      btn.innerHTML = `<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div><span>جارٍ الفحص والاستيراد...</span>`;
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/github/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ repoUrlOrPath })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          currentAnalyzedRepo = data;
+          document.getElementById('ghAnalysisCard').classList.remove('hidden');
+          document.getElementById('btnRenderAll').disabled = false;
+
+          document.getElementById('ghRepoTitle').innerText = data.repoName;
+          document.getElementById('ghPagesCount').innerText = `${data.pagesCount} صفحة`;
+
+          // Populate Stack Badges
+          const badgesEl = document.getElementById('ghStackBadges');
+          badgesEl.innerHTML = [
+            ...data.stack.frameworks.map(f => `<span class="bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 text-xs px-2.5 py-1 rounded-lg font-medium">${f}</span>`),
+            ...data.stack.packages.map(p => `<span class="bg-slate-800 text-slate-300 border border-slate-700 text-xs px-2.5 py-1 rounded-lg font-medium">${p}</span>`)
+          ].join('');
+
+          // Populate Pages Table
+          const tbody = document.getElementById('ghPagesTbody');
+          tbody.innerHTML = data.pages.map((p, idx) => `
+            <tr class="hover:bg-slate-800/40 transition">
+              <td class="p-3 font-semibold text-white">${p.name}</td>
+              <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] ${p.type === 'inertia-vue' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-sky-500/20 text-sky-300 border border-sky-500/30'}">${p.type}</span></td>
+              <td class="p-3 text-slate-400 dir-ltr text-right">${p.relativeRoute}</td>
+              <td class="p-3 text-slate-400 font-sans text-xs">${p.type === 'inertia-vue' ? 'Vue 3 + محاكاة Inertia Props' : 'Blade Layout + بيانات تجريبية'}</td>
+              <td class="p-3 text-center">
+                <span class="text-indigo-400 text-xs font-sans">جاهز للتصيير</span>
+              </td>
+            </tr>
+          `).join('');
+
+          showToast(`تم اكتشاف ${data.pagesCount} واجهة في المشروع!`);
+        } else {
+          showToast(data.error || 'فشل فحص المستودع', false);
+        }
+      } catch (err) {
+        showToast('خطأ أثناء الاتصال: ' + err.message, false);
+      } finally {
+        btn.innerHTML = origText;
+        btn.disabled = false;
+      }
+    }
+
+    async function renderAllGitHubPages() {
+      const repoUrlOrPath = document.getElementById('githubRepoInput').value.trim();
+      if (!repoUrlOrPath) return;
+
+      const progressCard = document.getElementById('ghBatchProgressCard');
+      const progressBar = document.getElementById('ghProgressBar');
+      const progressText = document.getElementById('ghBatchProgressText');
+      const statusBox = document.getElementById('ghBatchStatusBox');
+      const btn = document.getElementById('btnRenderAll');
+
+      progressCard.classList.remove('hidden');
+      progressBar.style.width = '20%';
+      progressText.innerText = 'جارٍ معالجة القوالب والمكونات...';
+      statusBox.innerHTML = `<div>[بدء المهمة] تصيير واجهات ${currentAnalyzedRepo?.repoName || ''} في Edge بدقة 2x ريتينا...</div>`;
+
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/github/render-capture', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            repoUrlOrPath,
+            preset: 'desktop_fhd',
+            deviceScaleFactor: 2
+          })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          progressBar.style.width = '100%';
+          progressText.innerText = `اكتمل: ${data.results.renderedCount} بنجاح / ${data.results.failedCount} متعذر`;
+          
+          statusBox.innerHTML += `<div class="text-emerald-400">[نجاح] تم التقاط وتخزين الصور وتوليد التقارير في: ${data.outputFolder}</div>`;
+          showToast(`تم تصوير واجهات المشروع بنجاح (${data.results.renderedCount} صفحة)!`);
+
+          displayFinalGitHubReport(data.results, data.outputFolder);
+          loadCaptures();
+        } else {
+          showToast(data.error || 'فشلت معالجة الصفحات', false);
+        }
+      } catch (err) {
+        showToast('خطأ أثناء المعالجة: ' + err.message, false);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function displayFinalGitHubReport(results, outputFolder) {
+      const reportView = document.getElementById('ghFinalReportView');
+      const reportGrid = document.getElementById('ghReportGrid');
+      const btnHtml = document.getElementById('btnViewHtmlReport');
+
+      btnHtml.href = `/output/github_${results.repoName}/report.html`;
+      reportView.classList.remove('hidden');
+
+      reportGrid.innerHTML = results.pages.map(p => `
+        <div class="bg-slate-900 border ${p.status === 'success' ? 'border-slate-800 hover:border-indigo-500/50' : 'border-rose-900/60'} rounded-2xl overflow-hidden shadow-lg transition">
+          <div class="relative aspect-video bg-slate-950 flex items-center justify-center overflow-hidden border-b border-slate-800">
+            ${p.screenshot ? `
+              <img src="/output/github_${results.repoName}/${p.screenshot}" class="w-full h-full object-cover object-top hover:scale-105 transition duration-300 cursor-pointer" onclick="window.open(this.src)" />
+              <div class="absolute top-2 left-2 bg-slate-900/80 px-2 py-0.5 rounded text-[10px] text-emerald-400 border border-emerald-500/30">
+                ${p.dimensions?.renderedWidth || 1920}x${p.dimensions?.renderedHeight || 1080}
+              </div>
+            ` : `
+              <div class="text-rose-400 text-xs text-center p-4">
+                <div class="font-bold mb-1">تعذر العرض المعزول</div>
+                <div class="text-slate-500 text-[10px]">${p.error || ''}</div>
+              </div>
+            `}
+          </div>
+          <div class="p-4 space-y-2">
+            <div class="flex items-center justify-between">
+              <h5 class="font-bold text-white text-xs truncate">${p.name}</h5>
+              <span class="text-[10px] px-2 py-0.5 rounded ${p.status === 'success' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'}">${p.status === 'success' ? 'تم الالتقاط' : 'تعذر'}</span>
+            </div>
+            <div class="text-[11px] font-mono text-slate-400">${p.relativeRoute}</div>
+            <div class="text-[10px] text-slate-400 bg-slate-950 p-2 rounded border border-slate-800">
+              <span class="text-slate-300 font-semibold block mb-0.5">تفاصيل المحاكاة:</span>
+              ${p.mockDetails && p.mockDetails.length > 0 ? p.mockDetails.join(' • ') : (p.error || 'لا توجد ملاحظات')}
+            </div>
+          </div>
+        </div>
+
+
+      `).join('');
+    }
+
+    function openGitHubOutputFolder() {
+      if (currentAnalyzedRepo?.repoName) {
+        openGalleryFolder(`github_${currentAnalyzedRepo.repoName}`);
+      } else {
+        openGalleryFolder();
+      }
+    }
+
+    // Init
+    loadCaptures();
+  </script>
+</body>
+</html>

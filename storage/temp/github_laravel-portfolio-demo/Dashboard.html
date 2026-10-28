@@ -1,0 +1,105 @@
+
+      <!DOCTYPE html>
+      <html lang="ar" dir="rtl" class="h-full bg-slate-50">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Dashboard - استعراض Inertia Vue</title>
+        <!-- Tailwind CSS CDN -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <!-- Google Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <!-- Vue 3 CDN -->
+        <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+        <style>
+          body { font-family: 'Cairo', 'Inter', system-ui, sans-serif; }
+          
+        </style>
+      </head>
+      <body class="h-full text-slate-800 antialiased selection:bg-indigo-500 selection:text-white">
+        <div id="app"></div>
+
+        <script>
+          const { createApp, ref, reactive, computed } = Vue;
+
+          // Mock Inertia Context
+          const mockProps = {"appName":"نظام إدارة المشاريع المتطور","app_name":"منصة الابتكار الرقمي","title":"لوحة التحكم والمؤشرات","user":{"id":1,"name":"عبدالله محمد","email":"admin@example.com","role":"مدير النظام","avatar":"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150","created_at":"2026-01-15"},"auth":{"check":true,"user":{"id":1,"name":"عبدالله محمد","email":"admin@example.com","avatar":"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"}},"stats":[{"title":"إجمالي المبيعات","value":"148,250 ر.س","change":"+12.5%","isPositive":true},{"title":"الطلبات النشطة","value":"1,280","change":"+8.2%","isPositive":true},{"title":"العملاء الجدد","value":"342","change":"-2.4%","isPositive":false},{"title":"معدل التحويل","value":"4.85%","change":"+1.1%","isPositive":true}],"items":[{"id":101,"title":"تصميم واجهة متجر سلة","client":"شركة الأفق التقنية","status":"مكتمل","date":"2026-10-20","price":"4,500 ر.س"},{"id":102,"title":"تطوير تطبيق توصيل طلبات","client":"مؤسسة المسار السريع","status":"قيد التنفيذ","date":"2026-10-22","price":"12,000 ر.س"},{"id":103,"title":"ربط بوابات الدفع الإلكتروني","client":"متجر سدرة العطور","status":"مراجعة نهائية","date":"2026-10-25","price":"2,800 ر.س"},{"id":104,"title":"تحسين محركات البحث SEO","client":"مدونة الحلول الذكية","status":"مجدول","date":"2026-10-27","price":"1,900 ر.س"}],"notifications":[{"id":1,"message":"تم إيداع دفعة مالية جديدة بقيمة 4,500 ر.س","time":"منذ ساعتين","unread":true},{"id":2,"message":"قام العميل بالموافقة على مسودة التصميم الأولى","time":"منذ 5 ساعات","unread":false}]};
+          const mockPage = {
+            props: mockProps,
+            url: window.location.pathname,
+            component: 'Dashboard'
+          };
+
+          // Mock Layouts
+          const AuthenticatedLayout = {
+            template: `
+              <div class="min-h-screen bg-slate-100 flex flex-col">
+                <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+                  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                    <div class="flex items-center gap-6">
+                      <div class="font-bold text-xl text-indigo-600">${mockProps.appName || 'المنصة الرقمية'}</div>
+                      <nav class="hidden md:flex gap-4 text-sm font-medium text-slate-600">
+                        <a href="#" class="text-indigo-600 font-bold">الرئيسية</a>
+                        <a href="#" class="hover:text-indigo-600">المعاملات</a>
+                        <a href="#" class="hover:text-indigo-600">الإحصائيات</a>
+                        <a href="#" class="hover:text-indigo-600">الإعدادات</a>
+                      </nav>
+                    </div>
+                    <div class="flex items-center gap-3">
+                      <div class="text-right text-xs">
+                        <div class="font-bold text-slate-900">${mockProps.auth?.user?.name || 'عبدالله محمد'}</div>
+                        <div class="text-slate-500">${mockProps.auth?.user?.email || 'admin@example.com'}</div>
+                      </div>
+                      <img src="${mockProps.auth?.user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}" class="w-9 h-9 rounded-full border border-slate-300" />
+                    </div>
+                  </div>
+                </header>
+                <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+                  <slot />
+                </main>
+              </div>
+            `
+          };
+
+          const GuestLayout = {
+            template: `
+              <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-slate-100">
+                <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
+                  <slot />
+                </div>
+              </div>
+            `
+          };
+
+          const PageComponent = {
+            components: {
+              AuthenticatedLayout,
+              GuestLayout,
+              AppLayout: AuthenticatedLayout
+            },
+            data() {
+              return {
+                ...mockProps,
+                $page: mockPage,
+                showingNavigationDropdown: false,
+                form: {
+                  email: 'test@example.com',
+                  password: 'password',
+                  remember: true,
+                  processing: false,
+                  errors: {}
+                }
+              };
+            },
+            template: "\n  <AuthenticatedLayout>\n    <div class=\"space-y-6\">\n      <!-- Welcome Banner -->\n      <div class=\"bg-indigo-700 rounded-2xl p-8 text-white shadow-xl relative overflow-hidden\">\n        <div class=\"relative z-10\">\n          <h2 class=\"text-2xl font-bold mb-2\">أهلاً بك مجدداً في لوحة التحكم</h2>\n          <p class=\"text-indigo-200 text-sm max-w-xl\">تابع سير مشاريعك المفتوحة وتحديثات العملاء ومعدلات الإنجاز لحظة بلحظة.</p>\n        </div>\n      </div>\n\n      <!-- KPI Metrics -->\n      <div class=\"grid grid-cols-1 md:grid-cols-4 gap-4\">\n        <div v-for=\"(stat, idx) in stats\" :key=\"idx\" class=\"bg-white p-5 rounded-2xl shadow-sm border border-slate-200\">\n          <div class=\"text-xs text-slate-500 font-medium mb-1\">{{ stat.title }}</div>\n          <div class=\"text-2xl font-bold text-slate-900\">{{ stat.value }}</div>\n          <div class=\"text-xs mt-2 font-semibold\" :class=\"stat.isPositive ? 'text-emerald-600' : 'text-rose-600'\">\n            {{ stat.change }} مقارنة بالشهر السابق\n          </div>\n        </div>\n      </div>\n\n      <!-- Recent Items Table -->\n      <div class=\"bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden\">\n        <div class=\"p-5 border-b border-slate-100 flex justify-between items-center\">\n          <h3 class=\"font-bold text-slate-900 text-sm\">أحدث الطلبات والمشاريع</h3>\n          <span class=\"text-xs text-indigo-600 font-semibold cursor-pointer\">عرض الجميع &larr;</span>\n        </div>\n        <table class=\"w-full text-right text-xs\">\n          <thead class=\"bg-slate-50 text-slate-400 font-medium\">\n            <tr>\n              <th class=\"p-3\">رقم الطلب</th>\n              <th class=\"p-3\">اسم المشروع</th>\n              <th class=\"p-3\">العميل</th>\n              <th class=\"p-3\">الحالة</th>\n              <th class=\"p-3\">القيمة</th>\n            </tr>\n          </thead>\n          <tbody class=\"divide-y divide-slate-100 text-slate-700 font-medium\">\n            <tr v-for=\"item in items\" :key=\"item.id\" class=\"hover:bg-slate-50/60\">\n              <td class=\"p-3 font-mono text-slate-400\">#{{ item.id }}</td>\n              <td class=\"p-3 font-bold text-slate-900\">{{ item.title }}</td>\n              <td class=\"p-3 text-slate-600\">{{ item.client }}</td>\n              <td class=\"p-3\">\n                <span class=\"px-2 py-0.5 rounded-full text-[10px] bg-emerald-50 text-emerald-700 font-semibold\">\n                  {{ item.status }}\n                </span>\n              </td>\n              <td class=\"p-3 font-bold text-indigo-600\">{{ item.price }}</td>\n            </tr>\n          </tbody>\n        </table>\n      </div>\n    </div>\n  </AuthenticatedLayout>\n"
+          };
+
+          const app = createApp(PageComponent);
+          app.config.globalProperties.$page = mockPage;
+          app.mount('#app');
+        </script>
+      </body>
+      </html>
+    
