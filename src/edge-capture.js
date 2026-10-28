@@ -283,36 +283,63 @@ async function stabilizePage(page, { hideFixed = false, hideBanners = true } = {
 async function detectHeroSection(page) {
   try {
     return await page.evaluate(() => {
+      const scrollHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+      const maxAllowedHeroHeight = Math.min(window.innerHeight * 1.15, 950);
+
+      const isCandidateValid = (el) => {
+        if (!el) return false;
+        const rect = el.getBoundingClientRect();
+        // Must be in the top portion of the page, have reasonable dimensions, and not be a full-page wrapper
+        if (rect.top > 400 || rect.top < -200) return false;
+        if (rect.width < 300) return false;
+        if (rect.height < 180) return false;
+        if (rect.height > maxAllowedHeroHeight) return false;
+        if (rect.height > scrollHeight * 0.65) return false;
+        const tag = el.tagName.toLowerCase();
+        if (tag === 'body' || tag === 'html') return false;
+        const idCls = ((el.className || '') + ' ' + (el.id || '')).toLowerCase();
+        if (/wrapper|container-fluid|min-h-screen|app|layout/i.test(idCls) && rect.height > 800) return false;
+        return true;
+      };
+
       const candidates = [
         'section[class*="hero" i]',
         'div[class*="hero" i]',
         '[id*="hero" i]',
+        '[class*="banner" i]:not([class*="cookie" i])',
+        '[class*="intro" i]',
+        '[class*="jumbotron" i]',
+        '[class*="masthead" i]',
         'header:not([class*="nav" i]):not([class*="menu" i])',
         'main > section:first-of-type',
-        'main > div:first-of-type',
-        'body > div:first-of-type > section:first-of-type'
+        'section:first-of-type'
       ];
 
       let foundEl = null;
+      let matchedSelector = '';
+
       for (const selector of candidates) {
-        const el = document.querySelector(selector);
-        if (el) {
-          const rect = el.getBoundingClientRect();
-          if (rect.height >= 200 && rect.width >= 300) {
-            foundEl = el;
-            break;
+        try {
+          const els = document.querySelectorAll(selector);
+          for (const el of els) {
+            if (isCandidateValid(el)) {
+              foundEl = el;
+              matchedSelector = selector;
+              break;
+            }
           }
-        }
+          if (foundEl) break;
+        } catch (e) {}
       }
 
       if (!foundEl) {
         const h1 = document.querySelector('h1');
         if (h1) {
           let parent = h1.parentElement;
-          while (parent && parent !== document.body) {
-            const rect = parent.getBoundingClientRect();
-            if (rect.height >= 250 && rect.width >= 400) {
+          while (parent && parent !== document.body && parent !== document.documentElement) {
+            if (isCandidateValid(parent)) {
               foundEl = parent;
+              matchedSelector = 'h1-parent';
               break;
             }
             parent = parent.parentElement;
@@ -325,25 +352,26 @@ async function detectHeroSection(page) {
         const style = window.getComputedStyle(foundEl);
         return {
           found: true,
-          selector: foundEl.tagName.toLowerCase() + (foundEl.id ? '#' + foundEl.id : '') + (foundEl.className ? '.' + foundEl.className.split(' ').slice(0, 2).join('.') : ''),
+          selector: matchedSelector + ' (' + foundEl.tagName.toLowerCase() + (foundEl.id ? '#' + foundEl.id : '') + ')',
           box: {
             x: Math.max(0, Math.round(rect.left + window.scrollX)),
             y: Math.max(0, Math.round(rect.top + window.scrollY)),
-            width: Math.round(rect.width),
+            width: Math.min(window.innerWidth, Math.round(rect.width)),
             height: Math.round(rect.height)
           },
           hasBackground: style.backgroundImage !== 'none' || style.backgroundColor !== 'rgba(0, 0, 0, 0)'
         };
       }
 
+      // Sensible default hero: top section of viewport
       return {
         found: false,
-        selector: 'body',
+        selector: 'viewport-top (افتراضي)',
         box: {
           x: 0,
           y: 0,
           width: window.innerWidth,
-          height: Math.min(window.innerHeight, 900)
+          height: Math.min(window.innerHeight, 750)
         },
         hasBackground: false
       };
@@ -351,12 +379,12 @@ async function detectHeroSection(page) {
   } catch (err) {
     return {
       found: false,
-      selector: 'body',
+      selector: 'fallback (افتراضي)',
       box: {
         x: 0,
         y: 0,
         width: 1920,
-        height: 900
+        height: 750
       },
       hasBackground: false
     };
@@ -469,10 +497,12 @@ async function captureWebsite({
 
   await stabilizePage(page, { hideFixed, hideBanners });
 
-  // Handle scroll offset
-  if (scrollY > 0 && captureMode !== 'hero') {
-    await page.evaluate((y) => window.scrollTo(0, y), scrollY);
-    await page.waitForTimeout(100);
+  // Handle scroll offset for standard viewport
+  if (scrollY > 0 && captureMode !== 'hero' && captureMode !== 'custom_clip') {
+    try {
+      await page.evaluate((y) => window.scrollTo(0, y), scrollY);
+      await page.waitForTimeout(100);
+    } catch (e) {}
   }
 
   // Determine site slug & target directory
@@ -502,10 +532,12 @@ async function captureWebsite({
   }
 
   let finalBounds = { width: targetWidth, height: targetHeight };
+  let hasTakenScreenshot = false;
 
   // Handle Capture Modes
   if (captureMode === 'fullPage') {
     screenshotOptions.fullPage = true;
+    delete screenshotOptions.clip;
     finalBounds = await page.evaluate(() => ({
       width: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
       height: Math.max(document.documentElement.scrollHeight, document.body.scrollHeight)
@@ -515,43 +547,94 @@ async function captureWebsite({
     const pad = heroBleedPadding || { top: 0, right: 0, bottom: 0, left: 0 };
     
     // Apply bleed / padding adjustments
-    const x = Math.max(0, hero.box.x - (pad.left || 0));
-    const y = Math.max(0, hero.box.y - (pad.top || 0));
-    const width = Math.min(targetWidth, hero.box.width + (pad.left || 0) + (pad.right || 0));
-    const height = Math.round(hero.box.height + (pad.top || 0) + (pad.bottom || 0));
+    let x = Math.max(0, hero.box.x - (pad.left || 0));
+    let y = Math.max(0, hero.box.y - (pad.top || 0));
+    let width = Math.min(targetWidth, hero.box.width + (pad.left || 0) + (pad.right || 0));
+    let height = Math.min(1800, Math.round(hero.box.height + (pad.top || 0) + (pad.bottom || 0)));
 
-    // Scroll hero into view if needed
-    await page.evaluate((topY) => window.scrollTo(0, topY), Math.max(0, y));
-    await page.waitForTimeout(100);
+    // If client supplied explicit clip for hero, respect it
+    if (clip && Number(clip.width) > 50 && Number(clip.height) > 50) {
+      x = Math.max(0, Number(clip.x) || 0);
+      y = Math.max(0, Number(clip.y) || 0);
+      width = Math.min(targetWidth, Number(clip.width));
+      height = Math.min(1800, Math.round(Number(clip.height)));
+    }
 
-    screenshotOptions.clip = { x, y, width, height };
+    // Scroll hero into view so it starts at the top of the viewport
+    try {
+      await page.evaluate((topY) => window.scrollTo(0, topY), Math.max(0, y));
+      await page.waitForTimeout(150);
+    } catch (e) {}
+
+    // Expand viewport if height exceeds targetHeight so Playwright doesn't clamp
+    if (height > targetHeight) {
+      try {
+        await page.setViewportSize({ width: targetWidth, height: height + 50 });
+      } catch (e) {}
+    }
+
+    // In the scrolled viewport, the hero is at Y = 0
+    screenshotOptions.clip = { x: 0, y: 0, width, height };
     finalBounds = { width, height };
   } else if (captureMode === 'custom_clip' && clip) {
+    const clipX = Math.max(0, Number(clip.x) || 0);
+    const clipY = Math.max(0, Number(clip.y) || 0);
+    const clipWidth = Math.min(targetWidth, Math.max(50, Number(clip.width) || targetWidth));
+    const clipHeight = Math.max(50, Number(clip.height) || targetHeight);
+
+    // Scroll to clipY
+    if (clipY > 0) {
+      try {
+        await page.evaluate((topY) => window.scrollTo(0, topY), clipY);
+        await page.waitForTimeout(150);
+      } catch (e) {}
+    }
+
+    // Expand viewport if height exceeds targetHeight
+    if (clipHeight > targetHeight) {
+      try {
+        await page.setViewportSize({ width: targetWidth, height: clipHeight + 50 });
+      } catch (e) {}
+    }
+
     screenshotOptions.clip = {
-      x: Math.max(0, Number(clip.x) || 0),
-      y: Math.max(0, Number(clip.y) || 0),
-      width: Math.min(targetWidth, Number(clip.width) || targetWidth),
-      height: Math.max(50, Number(clip.height) || targetHeight)
+      x: clipX,
+      y: 0, // already scrolled to clipY
+      width: clipWidth,
+      height: clipHeight
     };
-    finalBounds = { width: screenshotOptions.clip.width, height: screenshotOptions.clip.height };
+    finalBounds = { width: clipWidth, height: clipHeight };
   } else if (captureMode === 'selector' && selector) {
     const element = await page.$(selector);
     if (element) {
+      try {
+        await element.scrollIntoViewIfNeeded();
+        await page.waitForTimeout(150);
+      } catch (e) {}
       const box = await element.boundingBox();
       if (box) {
-        screenshotOptions.clip = {
-          x: Math.max(0, Math.round(box.x)),
-          y: Math.max(0, Math.round(box.y)),
-          width: Math.round(box.width),
-          height: Math.round(box.height)
-        };
-        finalBounds = { width: box.width, height: box.height };
+        finalBounds = { width: Math.round(box.width), height: Math.round(box.height) };
       }
+      await element.screenshot(screenshotOptions);
+      hasTakenScreenshot = true;
+    } else {
+      throw new Error(`العنصر المحدد بالمحدد (${selector}) غير موجود في الصفحة`);
     }
+  } else {
+    // Default Viewport
+    screenshotOptions.clip = {
+      x: 0,
+      y: 0,
+      width: targetWidth,
+      height: targetHeight
+    };
+    finalBounds = { width: targetWidth, height: targetHeight };
   }
 
-  // Take screenshot
-  await page.screenshot(screenshotOptions);
+  // Take screenshot if not already taken directly by element.screenshot
+  if (!hasTakenScreenshot) {
+    await page.screenshot(screenshotOptions);
+  }
 
   const fileStats = fs.statSync(outFilePath);
   const metadata = {

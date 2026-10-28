@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/server.js",
-    "test": "node test-capture.js"
+    "test": "node test/test-capture.js"
   },
   "keywords": [],
   "author": "",

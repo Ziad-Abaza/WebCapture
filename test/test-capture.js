@@ -1,5 +1,5 @@
 const http = require('http');
-const { captureWebsite, generatePreview, listCaptures } = require('./src/edge-capture');
+const { captureWebsite, generatePreview, listCaptures } = require('../src/edge-capture');
 
 const htmlContent = `
 <!DOCTYPE html>
