@@ -165,11 +165,17 @@ class BladeEngine {
   }
 
   resolveIncludes(content) {
-    return content.replace(/@include\s*\(\s*['"]([^'"]+)['"]\s*(?:,\s*\[[\s\S]*?\])?\s*\)/gi, (m, incView) => {
-      const incContent = this.readView(incView);
-      if (!incContent) return `<!-- Included view [${incView}] rendered with fallback mock -->`;
-      return this.resolveDirectives(incContent);
-    });
+    let current = content;
+    let depth = 0;
+    while (/@include\s*\(/i.test(current) && depth < 5) {
+      depth++;
+      current = current.replace(/@include\s*\(\s*['"]([^'"]+)['"]\s*(?:,\s*\[[\s\S]*?\])?\s*\)/gi, (m, incView) => {
+        const incContent = this.readView(incView);
+        if (!incContent) return `<!-- Included view [${incView}] rendered with fallback mock -->`;
+        return incContent;
+      });
+    }
+    return current;
   }
 
   resolveDirectives(content) {

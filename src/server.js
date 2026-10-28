@@ -14,6 +14,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 // Static files
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use('/output', express.static(path.join(__dirname, '..', 'output')));
+app.get('/favicon.ico', (req, res) => res.status(204).end());
 
 // -------------------------------------------------------------
 // Phase 1 Endpoints: Edge Studio Capture
@@ -27,17 +28,36 @@ app.get('/api/presets', (req, res) => {
 // 2. Generate Live Preview & Detect Hero Section
 app.post('/api/preview', async (req, res) => {
   try {
-    const { url, width, height, scrollY, waitDelay, dismissLoaders } = req.body;
+    const {
+      url,
+      preset,
+      customWidth,
+      customHeight,
+      width,
+      height,
+      scrollY,
+      waitDelay,
+      dismissLoaders,
+      pauseAnimations,
+      hideFixed,
+      hideBanners
+    } = req.body;
     if (!url) {
       return res.status(400).json({ success: false, error: 'الرابط مطلوب' });
     }
     const result = await generatePreview({
       url,
+      preset,
+      customWidth,
+      customHeight,
       width: Number(width) || 1920,
       height: Number(height) || 1080,
       scrollY: Number(scrollY) || 0,
       waitDelay: waitDelay !== undefined ? Number(waitDelay) : 3,
-      dismissLoaders: dismissLoaders !== false
+      dismissLoaders: dismissLoaders !== false,
+      pauseAnimations: pauseAnimations !== false,
+      hideFixed: !!hideFixed,
+      hideBanners: hideBanners !== false
     });
     res.json(result);
   } catch (err) {
@@ -62,6 +82,7 @@ app.post('/api/capture', async (req, res) => {
       scrollY,
       format,
       fileName,
+      pauseAnimations,
       hideFixed,
       hideBanners,
       waitDelay,
@@ -85,6 +106,7 @@ app.post('/api/capture', async (req, res) => {
       scrollY: Number(scrollY) || 0,
       format: format || 'png',
       fileName,
+      pauseAnimations: pauseAnimations !== false,
       hideFixed: !!hideFixed,
       hideBanners: hideBanners !== false,
       waitDelay: waitDelay !== undefined ? Number(waitDelay) : 3,
@@ -193,6 +215,31 @@ app.post('/api/github/render-capture', async (req, res) => {
     });
   } catch (err) {
     console.error('Render & Capture error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 9. Render & Capture Single View
+app.post('/api/github/render-single', async (req, res) => {
+  try {
+    const { repoUrlOrPath, pageName, preset, deviceScaleFactor } = req.body;
+    if (!repoUrlOrPath || !pageName) {
+      return res.status(400).json({ success: false, error: 'رابط/مسار المستودع واسم الصفحة مطلوبان' });
+    }
+
+    const analyzer = new GitHubAnalyzer(repoUrlOrPath);
+    const result = await analyzer.renderAndCaptureSingle({
+      pageName,
+      preset: preset || 'desktop_fhd',
+      deviceScaleFactor: Number(deviceScaleFactor) || 2
+    });
+
+    res.json({
+      success: true,
+      ...result
+    });
+  } catch (err) {
+    console.error('Render Single error:', err);
     res.status(500).json({ success: false, error: err.message });
   }
 });

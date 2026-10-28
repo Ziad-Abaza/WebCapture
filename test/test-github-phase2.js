@@ -1,11 +1,11 @@
 const path = require('path');
 const fs = require('fs');
-const { GitHubAnalyzer } = require('./src/github-analyzer');
+const { GitHubAnalyzer } = require('../src/github-analyzer');
 
 (async () => {
   console.log('--- Testing Phase 2: GitHub / Laravel / Vue / Inertia / Blade Extractor ---');
 
-  const testPath = path.resolve('./test_projects/laravel-portfolio-demo');
+  const testPath = path.resolve(__dirname, 'test_projects/laravel-portfolio-demo');
   console.log('Target project path:', testPath);
 
   const analyzer = new GitHubAnalyzer(testPath);

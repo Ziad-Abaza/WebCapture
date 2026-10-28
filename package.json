@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/server.js",
-    "test": "node test/test-capture.js"
+    "test": "node test/test-capture.js",
+    "test:github": "node test/test-github-phase2.js",
+    "test:e2e": "node test/e2e-ui-verification.js",
+    "test:all": "node test/test-capture.js && node test/test-github-phase2.js && node test/e2e-ui-verification.js"
   },
   "keywords": [],
   "author": "",

@@ -221,7 +221,7 @@ async function navigateAndLoadPage(page, url, { waitDelay = 3, dismissLoaders = 
  * Prepares the page by loading fonts and stabilizing CSS animations and scrollbars.
  * Must be executed AFTER preloader has vanished to avoid freezing loaders halfway.
  */
-async function stabilizePage(page, { hideFixed = false, hideBanners = true } = {}) {
+async function stabilizePage(page, { hideFixed = false, hideBanners = true, pauseAnimations = true } = {}) {
   // Wait for fonts
   try {
     await page.evaluate(async () => {
@@ -242,12 +242,14 @@ async function stabilizePage(page, { hideFixed = false, hideBanners = true } = {
             scrollbar-width: none !important;
             -ms-overflow-style: none !important;
           }
-          /* Pause animations & transitions to avoid motion blur / halfway renders */
-          *, *::before, *::after {
-            animation-play-state: paused !important;
-            transition-duration: 0s !important;
-            transition-delay: 0s !important;
-          }
+          ${pauseAnimations !== false ? `
+            /* Pause animations & transitions to avoid motion blur / halfway renders */
+            *, *::before, *::after {
+              animation-play-state: paused !important;
+              transition-duration: 0s !important;
+              transition-delay: 0s !important;
+            }
+          ` : ''}
           ${hideBanners ? `
             /* Hide typical annoyance overlays: cookies, feedback, chat badges */
             [id*="cookie"], [class*="cookie"], [class*="consent"],
@@ -396,24 +398,41 @@ async function detectHeroSection(page) {
  */
 async function generatePreview({
   url,
+  preset = null,
   width = 1920,
   height = 1080,
+  customWidth = null,
+  customHeight = null,
   deviceScaleFactor = 1,
   scrollY = 0,
   waitDelay = 3,
-  dismissLoaders = true
+  dismissLoaders = true,
+  pauseAnimations = true,
+  hideFixed = false,
+  hideBanners = true
 }) {
+  let targetWidth = Number(width) || 1920;
+  let targetHeight = Number(height) || 1080;
+
+  if (preset && PRESETS[preset] && preset !== 'custom') {
+    targetWidth = PRESETS[preset].width;
+    targetHeight = PRESETS[preset].height;
+  } else if (customWidth && customHeight) {
+    targetWidth = parseInt(customWidth, 10);
+    targetHeight = parseInt(customHeight, 10);
+  }
+
   const browser = await getBrowser();
   const context = await createStealthContext(browser, {
-    width,
-    height,
+    width: targetWidth,
+    height: targetHeight,
     deviceScaleFactor: 1 // Keep preview fast
   });
   const page = await context.newPage();
 
   const loadInfo = await navigateAndLoadPage(page, url, { waitDelay, dismissLoaders });
 
-  await stabilizePage(page);
+  await stabilizePage(page, { hideFixed, hideBanners, pauseAnimations });
 
   if (scrollY > 0) {
     await page.evaluate((y) => window.scrollTo(0, y), scrollY);
@@ -467,6 +486,7 @@ async function captureWebsite({
   scrollY = 0,
   format = 'png', // 'png' | 'jpeg' | 'webp'
   quality = 95,
+  pauseAnimations = true,
   hideFixed = false,
   hideBanners = true,
   waitDelay = 3,
@@ -495,7 +515,7 @@ async function captureWebsite({
 
   const loadInfo = await navigateAndLoadPage(page, url, { waitDelay, dismissLoaders });
 
-  await stabilizePage(page, { hideFixed, hideBanners });
+  await stabilizePage(page, { hideFixed, hideBanners, pauseAnimations });
 
   // Handle scroll offset for standard viewport
   if (scrollY > 0 && captureMode !== 'hero' && captureMode !== 'custom_clip') {
@@ -655,6 +675,7 @@ async function captureWebsite({
     fileName: `${baseName}.${outExtension}`,
     fileSizeKB: Math.round(fileStats.size / 1024),
     format,
+    pauseAnimations: pauseAnimations !== false,
     waitDelay: Number(waitDelay) || 0,
     dismissLoaders: !!dismissLoaders,
     removedLoadersCount: loadInfo.removedLoadersCount || 0

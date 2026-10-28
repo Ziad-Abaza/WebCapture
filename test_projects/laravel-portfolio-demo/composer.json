@@ -1,0 +1,15 @@
+{
+  "name": "laravel/laravel-portfolio-demo",
+  "type": "project",
+  "description": "منصة إدارة المشاريع وحافظة الأعمال الاحترافية",
+  "require": {
+    "php": "^8.2",
+    "laravel/framework": "^11.0",
+    "inertiajs/inertia-laravel": "^1.0",
+    "laravel/sanctum": "^4.0"
+  },
+  "require-dev": {
+    "fakerphp/faker": "^1.23",
+    "mockery/mockery": "^1.6"
+  }
+}

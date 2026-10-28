@@ -26,10 +26,24 @@ class GitHubAnalyzer {
   }
 
   async prepareRepository() {
-    // If it's a local folder that already exists
-    if (fs.existsSync(this.source) && fs.statSync(this.source).isDirectory()) {
-      this.repoDir = path.resolve(this.source);
-      return { success: true, dir: this.repoDir, isLocal: true };
+    // Check possible local paths
+    const candidates = [
+      this.source,
+      path.resolve(this.source),
+      path.join(process.cwd(), this.source),
+      path.join(process.cwd(), 'test', this.source)
+    ];
+
+    for (const c of candidates) {
+      if (fs.existsSync(c)) {
+        try {
+          if (fs.statSync(c).isDirectory()) {
+            this.repoDir = path.resolve(c);
+            this.repoName = sanitizeRepoName(this.repoDir);
+            return { success: true, dir: this.repoDir, isLocal: true };
+          }
+        } catch (e) {}
+      }
     }
 
     // Otherwise clone from GitHub
@@ -352,6 +366,83 @@ class GitHubAnalyzer {
     return {
       results,
       reportPath,
+      outputFolder
+    };
+  }
+
+  /**
+   * Render & capture a single page independently
+   */
+  async renderAndCaptureSingle({ pageName, preset = 'desktop_fhd', deviceScaleFactor = 2 }) {
+    await this.prepareRepository();
+    const stack = this.analyzeStack();
+    const pages = this.discoverRoutesAndPages();
+    const page = pages.find(p => p.name === pageName || p.name.toLowerCase() === pageName.toLowerCase());
+
+    if (!page) {
+      throw new Error(`الصفحة "${pageName}" غير موجودة في المشروع.`);
+    }
+
+    const outputFolder = path.join(process.cwd(), 'output', `github_${this.repoName}`);
+    const tempDir = path.join(process.cwd(), 'storage', 'temp', `github_${this.repoName}`);
+    if (!fs.existsSync(outputFolder)) fs.mkdirSync(outputFolder, { recursive: true });
+    if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
+
+    const viewsDir = path.join(this.repoDir, 'resources', 'views');
+    const bladeEngine = new BladeEngine(viewsDir);
+    const inertiaEngine = new InertiaEngine(this.repoDir);
+
+    const pageResult = {
+      name: page.name,
+      type: page.type,
+      relativeRoute: page.relativeRoute,
+      status: 'pending',
+      screenshot: null,
+      mockApplied: true,
+      mockDetails: [],
+      error: null
+    };
+
+    let compiledHtml = '';
+    if (page.type === 'inertia-vue') {
+      if (page.filePath && fs.existsSync(page.filePath)) {
+        compiledHtml = inertiaEngine.generateStandaloneHtml(page.filePath, page.name);
+        pageResult.mockDetails.push('تم استخراج وحقن المكون في بيئة Vue 3 وInertia مع محاكاة Props ومكونات التوجيه.');
+      } else {
+        throw new Error('ملف مكون Vue غير موجود فعلياً في المستودع.');
+      }
+    } else if (page.type === 'blade') {
+      if (page.filePath && fs.existsSync(page.filePath)) {
+        compiledHtml = bladeEngine.compile(page.name);
+        pageResult.mockDetails.push('تم تصيير قوالب Blade وتطبيق الـ Layout وتوليد بيانات محاكاة للمتغيرات والمصفوفات.');
+      } else {
+        throw new Error('ملف قالب Blade غير موجود.');
+      }
+    }
+
+    const safePageName = page.name.replace(/[^\w-]/g, '_');
+    const tempHtmlFile = path.join(tempDir, `${safePageName}.html`);
+    fs.writeFileSync(tempHtmlFile, compiledHtml, 'utf8');
+
+    const fileUrl = 'file:///' + tempHtmlFile.replace(/\\/g, '/');
+    const capture = await captureWebsite({
+      url: fileUrl,
+      outputDir: outputFolder,
+      fileName: `${safePageName}_preview`,
+      preset,
+      deviceScaleFactor,
+      captureMode: 'viewport',
+      format: 'png'
+    });
+
+    pageResult.status = 'success';
+    pageResult.screenshot = capture.metadata.fileName;
+    pageResult.screenshotRelative = `/output/github_${this.repoName}/${capture.metadata.fileName}`;
+    pageResult.dimensions = capture.metadata.dimensions;
+
+    return {
+      repoName: this.repoName,
+      page: pageResult,
       outputFolder
     };
   }

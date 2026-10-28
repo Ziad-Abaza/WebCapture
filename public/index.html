@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>استوديو لقطات Edge واستخراج واجهات GitHub</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><text y='20' font-size='20'>📸</text></svg>">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -294,7 +295,7 @@
             <!-- Scroll Offset Controller -->
             <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center gap-4">
               <label class="text-xs font-bold text-slate-300 whitespace-nowrap">موضع التمرير (Scroll Y):</label>
-              <input type="range" id="scrollSlider" min="0" max="3000" value="0" step="50" oninput="onScrollChange(this.value)" class="flex-1 accent-indigo-500 cursor-pointer" />
+              <input type="range" id="scrollSlider" min="0" max="3000" value="0" step="50" oninput="onScrollChange(this.value)" onchange="if (livePreviewData) fetchPreview();" class="flex-1 accent-indigo-500 cursor-pointer" />
               <span id="scrollVal" class="text-xs font-mono text-slate-400 w-16 text-left">0 px</span>
               <button onclick="scrollToTop()" class="px-2.5 py-1 text-[11px] bg-slate-900 hover:bg-slate-800 rounded border border-slate-700 text-slate-300">أعلى</button>
               <button onclick="scrollToHero()" class="px-2.5 py-1 text-[11px] bg-slate-900 hover:bg-slate-800 rounded border border-slate-700 text-indigo-300">قسم الهيرو</button>
@@ -463,7 +464,13 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-end">
           <div class="lg:col-span-8 space-y-1.5">
-            <label class="block text-xs font-bold text-slate-300">رابط مستودع GitHub أو مسار مجلد محلي على الجهاز</label>
+            <div class="flex items-center justify-between">
+              <label class="block text-xs font-bold text-slate-300">رابط مستودع GitHub أو مسار مجلد محلي على الجهاز</label>
+              <div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+                <span>مشروع تجريبي:</span>
+                <button type="button" onclick="document.getElementById('githubRepoInput').value='test_projects/laravel-portfolio-demo'; analyzeGitHubRepo();" class="text-indigo-400 hover:text-indigo-300 font-mono underline decoration-dotted">test_projects/laravel-portfolio-demo</button>
+              </div>
+            </div>
             <input type="text" id="githubRepoInput" placeholder="https://github.com/user/laravel-vue-project أو D:/Projects/MyLaravelApp" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono text-left dir-ltr" />
           </div>
 
@@ -476,6 +483,31 @@
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
               <span>2. استخراج وتصوير الكل</span>
             </button>
+          </div>
+        </div>
+
+        <!-- Phase 2 Presets & Scale Options -->
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-3 border-t border-slate-800 text-xs items-center">
+          <div class="sm:col-span-7 flex items-center gap-2">
+            <label class="text-[11px] font-bold text-slate-300 whitespace-nowrap">أبعاد التقاط الواجهات:</label>
+            <select id="ghPresetSelect" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500">
+              <option value="desktop_fhd" selected>سطح المكتب كامل FHD (1920x1080)</option>
+              <option value="mostaql_hd">مستقل / خمسات (4:3 - 1600x1200)</option>
+              <option value="mostaql_std">مستقل / خمسات كلاسيك (4:3 - 1200x900)</option>
+              <option value="behance_cover">بيهانس غلاف (4:3 - 1600x1200)</option>
+              <option value="behance_16_9">بيهانس / دريبل (16:9 - 1920x1080)</option>
+              <option value="behance_retina">شاشة عريضة ريتينا (16:10 - 2880x1800)</option>
+              <option value="upwork_catalog">أب ورك كاتالوج (4:3 - 1000x750)</option>
+              <option value="macbook">ماك بوك (16:10 - 1440x900)</option>
+            </select>
+          </div>
+          <div class="sm:col-span-5 flex items-center justify-end gap-2">
+            <label class="text-[11px] font-bold text-slate-300 whitespace-nowrap">مقياس الدقة (Retina):</label>
+            <div class="flex rounded-xl bg-slate-900 p-1 border border-slate-700">
+              <button type="button" onclick="setGhScale(1)" id="btnGhScale1" class="px-3 py-1 text-xs font-semibold rounded-lg text-slate-400">1x</button>
+              <button type="button" onclick="setGhScale(2)" id="btnGhScale2" class="px-3 py-1 text-xs font-semibold rounded-lg bg-indigo-600 text-white shadow">2x ريتينا</button>
+              <button type="button" onclick="setGhScale(3)" id="btnGhScale3" class="px-3 py-1 text-xs font-semibold rounded-lg text-slate-400">3x فائق</button>
+            </div>
           </div>
         </div>
 
@@ -809,6 +841,12 @@
 
       const waitDelay = getWaitDelay();
       const dismissLoaders = document.getElementById('chkDismissLoaders')?.checked !== false;
+      const preset = document.getElementById('presetSelect')?.value || 'mostaql_hd';
+      const customWidth = document.getElementById('customWidth')?.value;
+      const customHeight = document.getElementById('customHeight')?.value;
+      const pauseAnimations = document.getElementById('chkFreeze')?.checked !== false;
+      const hideFixed = document.getElementById('chkHideFixed')?.checked || false;
+      const hideBanners = document.getElementById('chkHideBanners')?.checked !== false;
 
       let countdownSec = waitDelay;
       if (titleEl) titleEl.innerText = 'جارٍ الاتصال بالموقع وفحص الأمان عبر Edge...';
@@ -832,9 +870,15 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             url,
+            preset,
+            customWidth,
+            customHeight,
             scrollY: Number(scrollY) || 0,
             waitDelay,
-            dismissLoaders
+            dismissLoaders,
+            pauseAnimations,
+            hideFixed,
+            hideBanners
           })
         });
         const data = await res.json();
@@ -893,8 +937,21 @@
       const dimDisplay = document.getElementById('dimDisplay');
       const frameDimText = document.getElementById('frameDimText');
 
+      const presetSelect = document.getElementById('presetSelect');
+      const presetVal = presetSelect?.value;
+      const presetText = presetSelect?.selectedOptions[0]?.text || '';
+
       if (!livePreviewData || !livePreviewData.previewBase64) {
         boxEl?.classList.add('hidden');
+        if (dimDisplay) {
+          if (presetVal === 'custom') {
+            const cw = document.getElementById('customWidth')?.value || 1920;
+            const ch = document.getElementById('customHeight')?.value || 1080;
+            dimDisplay.innerText = `${cw} × ${ch} px (مخصص)`;
+          } else {
+            dimDisplay.innerText = presetText || '1600 × 1200 px';
+          }
+        }
         return;
       }
 
@@ -1044,9 +1101,14 @@
         if (isDraggingBox) {
           const deltaY = (e.clientY - dragStartY) * scaleFactorY;
           const deltaX = (e.clientX - dragStartX) * scaleFactorX;
+          const curW = Number(document.getElementById('clipWidth')?.value) || 1600;
+          const curH = Number(document.getElementById('clipHeight')?.value) || 800;
           const newY = Math.max(0, Math.min(vpH - 50, Math.round(initialBoxY + deltaY)));
+          const newX = Math.max(0, Math.min(vpW - 50, Math.round(initialBoxX + deltaX)));
           const inY = document.getElementById('clipY');
+          const inX = document.getElementById('clipX');
           if (inY) inY.value = newY;
+          if (inX) inX.value = newX;
           updateFramingBox();
         } else if (isResizingBox) {
           const deltaH = (e.clientY - dragStartY) * scaleFactorY;
@@ -1098,6 +1160,7 @@
         scrollY: Number(document.getElementById('scrollSlider').value) || 0,
         format: document.getElementById('outFormat').value,
         fileName: document.getElementById('outFileName').value,
+        pauseAnimations: document.getElementById('chkFreeze')?.checked !== false,
         hideFixed: document.getElementById('chkHideFixed').checked,
         hideBanners: document.getElementById('chkHideBanners').checked,
         waitDelay,
@@ -1154,7 +1217,7 @@
             <div class="p-3">
               <div class="font-bold text-xs text-white truncate mb-1" title="${c.fileName}">${c.fileName}</div>
               <div class="text-[10px] text-slate-500 flex justify-between items-center mb-2">
-                <span>المجلد: ${c.folder}</span>
+                <span>المجلد: <button type="button" onclick="openGalleryFolder('${c.folder}')" class="text-indigo-400 hover:text-indigo-300 underline decoration-dotted font-mono" title="فتح هذا المجلد">${c.folder}</button></span>
                 <span>${new Date(c.createdAt).toLocaleDateString('ar-SA')}</span>
               </div>
               <div class="flex items-center gap-2 pt-2 border-t border-slate-800">
@@ -1164,7 +1227,9 @@
             </div>
           </div>
         `).join('');
-      } catch (e) {}
+      } catch (e) {
+        console.error('loadCaptures error:', e);
+      }
     }
 
     async function deleteCapture(fullPath) {
@@ -1179,19 +1244,30 @@
         if (data.success) {
           showToast('تم حذف اللقطة');
           loadCaptures();
+        } else {
+          showToast(data.error || 'تعذر حذف اللقطة', false);
         }
-      } catch (e) {}
+      } catch (e) {
+        showToast('خطأ أثناء الحذف: ' + e.message, false);
+      }
     }
 
     async function openGalleryFolder(folder = '') {
       try {
-        await fetch('/api/captures/open-folder', {
+        const res = await fetch('/api/captures/open-folder', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ folder })
         });
-        showToast('تم فتح المجلد في مستكشف ويندوز');
-      } catch (e) {}
+        const data = await res.json();
+        if (data.success) {
+          showToast('تم فتح المجلد في مستكشف ويندوز');
+        } else {
+          showToast(data.error || 'تعذر فتح المجلد', false);
+        }
+      } catch (e) {
+        showToast('تعذر فتح المجلد: ' + e.message, false);
+      }
     }
 
     // -----------------------------------------------------------------
@@ -1241,7 +1317,10 @@
               <td class="p-3 text-slate-400 dir-ltr text-right">${p.relativeRoute}</td>
               <td class="p-3 text-slate-400 font-sans text-xs">${p.type === 'inertia-vue' ? 'Vue 3 + محاكاة Inertia Props' : 'Blade Layout + بيانات تجريبية'}</td>
               <td class="p-3 text-center">
-                <span class="text-indigo-400 text-xs font-sans">جاهز للتصيير</span>
+                <button onclick="renderSingleGitHubPage('${p.name}', this)" class="px-3 py-1 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 border border-indigo-500/30 rounded-lg text-xs font-sans font-medium transition inline-flex items-center gap-1.5 shadow-sm" title="تصيير والتقاط هذه الواجهة بشكل مستقل">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg>
+                  <span>تصيير الواجهة</span>
+                </button>
               </td>
             </tr>
           `).join('');
@@ -1258,6 +1337,75 @@
       }
     }
 
+    let currentGhScale = 2;
+    function setGhScale(scale) {
+      currentGhScale = scale;
+      [1, 2, 3].forEach(s => {
+        const btn = document.getElementById(`btnGhScale${s}`);
+        if (!btn) return;
+        if (s === scale) {
+          btn.className = 'px-3 py-1 text-xs font-semibold rounded-lg bg-indigo-600 text-white shadow';
+        } else {
+          btn.className = 'px-3 py-1 text-xs font-semibold rounded-lg text-slate-400 hover:text-slate-200';
+        }
+      });
+    }
+
+    async function renderSingleGitHubPage(pageName, btnEl) {
+      const repoUrlOrPath = document.getElementById('githubRepoInput').value.trim();
+      if (!repoUrlOrPath) {
+        showToast('يرجى تحديد مسار المستودع أولاً', false);
+        return;
+      }
+
+      const origHtml = btnEl ? btnEl.innerHTML : '';
+      if (btnEl) {
+        btnEl.disabled = true;
+        btnEl.innerHTML = `<div class="w-3 h-3 border-2 border-indigo-300 border-t-transparent rounded-full animate-spin"></div><span>جارٍ التصيير...</span>`;
+      }
+
+      const preset = document.getElementById('ghPresetSelect')?.value || 'desktop_fhd';
+      const deviceScaleFactor = currentGhScale || 2;
+
+      try {
+        const res = await fetch('/api/github/render-single', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            repoUrlOrPath,
+            pageName,
+            preset,
+            deviceScaleFactor
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`تم تصيير الواجهة (${pageName}) وحفظها بنجاح!`);
+          if (btnEl) {
+            btnEl.className = 'px-3 py-1 bg-emerald-600/20 text-emerald-300 border border-emerald-500/30 rounded-lg text-xs font-sans font-medium transition inline-flex items-center gap-1.5';
+            btnEl.innerHTML = `<svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg><span>تم الالتقاط</span>`;
+            btnEl.disabled = false;
+          }
+          loadCaptures();
+          if (data.page?.screenshotRelative) {
+            window.open(data.page.screenshotRelative, '_blank');
+          }
+        } else {
+          showToast(data.error || 'فشل تصيير الواجهة', false);
+          if (btnEl) {
+            btnEl.innerHTML = origHtml;
+            btnEl.disabled = false;
+          }
+        }
+      } catch (err) {
+        showToast('خطأ: ' + err.message, false);
+        if (btnEl) {
+          btnEl.innerHTML = origHtml;
+          btnEl.disabled = false;
+        }
+      }
+    }
+
     async function renderAllGitHubPages() {
       const repoUrlOrPath = document.getElementById('githubRepoInput').value.trim();
       if (!repoUrlOrPath) return;
@@ -1268,10 +1416,13 @@
       const statusBox = document.getElementById('ghBatchStatusBox');
       const btn = document.getElementById('btnRenderAll');
 
+      const preset = document.getElementById('ghPresetSelect')?.value || 'desktop_fhd';
+      const deviceScaleFactor = currentGhScale || 2;
+
       progressCard.classList.remove('hidden');
       progressBar.style.width = '20%';
       progressText.innerText = 'جارٍ معالجة القوالب والمكونات...';
-      statusBox.innerHTML = `<div>[بدء المهمة] تصيير واجهات ${currentAnalyzedRepo?.repoName || ''} في Edge بدقة 2x ريتينا...</div>`;
+      statusBox.innerHTML = `<div>[بدء المهمة] تصيير واجهات ${currentAnalyzedRepo?.repoName || ''} في Edge بدقة ${deviceScaleFactor}x ريتينا بأبعاد ${preset}...</div>`;
 
       btn.disabled = true;
 
@@ -1281,8 +1432,8 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             repoUrlOrPath,
-            preset: 'desktop_fhd',
-            deviceScaleFactor: 2
+            preset,
+            deviceScaleFactor
           })
         });
         const data = await res.json();
